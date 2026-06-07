@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llmreproscore"
+version = "0.1.0"
+description = "Repeatability and reproducibility scores for stochastic LLM outputs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+  {name = "Cathy Shyr"}
+]
+keywords = ["LLM", "repeatability", "reproducibility", "semantic similarity", "logprobs", "bootstrap"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = [
+  "numpy>=1.23",
+  "pandas>=1.5",
+  "scikit-learn>=1.2",
+  "sentence-transformers>=2.2"
+]
+
+[project.optional-dependencies]
+adapters = [
+  "openai>=1.0",
+  "requests>=2.28"
+]
+dev = [
+  "pytest>=7.0",
+  "ruff>=0.3"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
