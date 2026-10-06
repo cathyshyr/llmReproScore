@@ -101,11 +101,103 @@ scores = internal_repeatability(
 )
 ```
 
-The package exponentiates candidate log probabilities, normalizes over returned top-k candidates, computes Shannon entropy using log base 2, and returns:
+For each output position, the package normalizes the probabilities of the returned top-k candidate tokens and computes Shannon entropy:
 
 ```math
-1 - \bar H / \log_2(k)
+H_{r,i}
+=
+-\sum_{v \in K_{r,i}}
+\tilde{\pi}_{r,i}(v)
+\log_2\left(\tilde{\pi}_{r,i}(v)\right).
 ```
+
+Token-level entropy is averaged across output positions to obtain run-level entropy:
+
+```math
+H_r
+=
+\frac{1}{L_r}
+\sum_{i=1}^{L_r}
+H_{r,i}.
+```
+
+Run-level entropy is converted to normalized run-level token-generation certainty:
+
+```math
+C_r
+=
+1-\frac{H_r}{\log_2 k}.
+```
+
+Internal Repeatability quantifies the consistency of token-generation certainty across repeated runs:
+
+```math
+S_C^{\mathrm{Rpt}}
+=
+\sqrt{
+\frac{1}{R}
+\sum_{r=1}^{R}
+(C_r-\bar{C})^2
+}.
+```
+
+The Internal Repeatability Score is:
+
+```math
+\widetilde{C}^{\mathrm{Rpt}}
+=
+1-2S_C^{\mathrm{Rpt}}.
+```
+
+The score ranges from 0 to 1. Larger values indicate greater consistency in token-generation certainty across repeated runs under identical conditions. A score of 1 indicates identical token-generation certainty across all runs, regardless of the overall level of certainty.
+
+## Internal reproducibility example
+
+```python
+from llmreproscore import internal_reproducibility
+
+scores = internal_reproducibility(
+    logprob_df,
+    top_k=30,
+    case_col="case_id",
+    condition_col="condition_id",
+    run_col="run_id",
+    position_col="token_position",
+    logprob_col="candidate_logprob",
+)
+```
+
+For each experimental condition \(p\), normalized run-level token-generation certainty is averaged across repeated runs:
+
+```math
+\bar{C}^{(p)}
+=
+\frac{1}{R}
+\sum_{r=1}^{R}
+C_r^{(p)}.
+```
+
+Internal Reproducibility quantifies the consistency of mean token-generation certainty across pre-specified experimental conditions:
+
+```math
+S_C^{\mathrm{Rpd}}
+=
+\sqrt{
+\frac{1}{P}
+\sum_{p=1}^{P}
+\left(\bar{C}^{(p)}-\bar{C}\right)^2
+}.
+```
+
+The Internal Reproducibility Score is:
+
+```math
+\widetilde{C}^{\mathrm{Rpd}}
+=
+1-2S_C^{\mathrm{Rpd}}.
+```
+
+The score ranges from 0 to 1. Larger values indicate greater consistency in token-generation certainty across different, pre-specified experimental conditions. A score of 1 indicates identical mean token-generation certainty across all conditions, regardless of the overall level of certainty.
 
 ## Statistical inference examples
 
