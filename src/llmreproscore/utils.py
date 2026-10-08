@@ -43,6 +43,64 @@ def average_pairwise_cosine_from_matrix(x: np.ndarray) -> float:
     return float(np.mean(upper))
 
 
+
+def average_cross_cosine_from_matrices(
+    x: np.ndarray,
+    y: np.ndarray,
+) -> float:
+    """Average cosine similarity across all rows of x and y.
+
+    If x contains R_p run embeddings and y contains R_q run
+    embeddings, this is exactly the mean of all R_p * R_q
+    cross-condition cosine similarities.
+
+    The full similarity matrix is not materialized.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    if x.ndim != 2 or y.ndim != 2:
+        raise ValueError(
+            "x and y must both be 2D arrays."
+        )
+
+    if x.shape[1] != y.shape[1]:
+        raise ValueError(
+            "x and y must have the same embedding dimension."
+        )
+
+    if x.shape[0] == 0 or y.shape[0] == 0:
+        return np.nan
+
+    x_norms = np.linalg.norm(
+        x,
+        axis=1,
+        keepdims=True,
+    )
+
+    y_norms = np.linalg.norm(
+        y,
+        axis=1,
+        keepdims=True,
+    )
+
+    x_norms[x_norms == 0] = 1.0
+    y_norms[y_norms == 0] = 1.0
+
+    x_unit = x / x_norms
+    y_unit = y / y_norms
+
+    mean_x = x_unit.mean(axis=0)
+    mean_y = y_unit.mean(axis=0)
+
+    return float(
+        np.dot(
+            mean_x,
+            mean_y,
+        )
+    )
+
+
 def rescale_cosine_to_unit_interval(cosine_value: float) -> float:
     """Rescale cosine similarity from [-1, 1] to [0, 1]."""
     if np.isnan(cosine_value):
